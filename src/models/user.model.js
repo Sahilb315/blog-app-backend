@@ -3,6 +3,10 @@ import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
   {
+    profilePic: {
+      type: String,
+      required: true,
+    },
     username: {
       type: String,
       required: true,
@@ -16,6 +20,24 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+    },
+    followers: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        }
+      ]
+    },
+    following: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        }
+      ]
     },
   },
   { timestamps: true }

@@ -7,6 +7,7 @@ const app = express();
 dotenv.config();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 connectDB();
 
 app.listen(process.env.PORT || 3000, () => {
