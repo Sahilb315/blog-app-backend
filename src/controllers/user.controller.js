@@ -2,21 +2,34 @@ import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import { generateJwtToken } from "../utils/generateToken.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { Blog } from "../models/blog.model.js";
+import { mongoose } from "mongoose";
 
 async function signUpUser(req, res) {
   try {
-    const { username, email, password, followers, following } = JSON.parse(req.body.json);
+    const { username, email, password, followers, following } = JSON.parse(
+      req.body.json
+    );
     const profilePic = req.file;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.send({ status: false, message: "User already exists" });
     }
-    if(!profilePic) return res.send({status: false, message: "Profile pic not found"});
-    console.log(profilePic);
+    if (!profilePic)
+      return res.send({ status: false, message: "Profile pic not found" });
 
-    const result = await uploadOnCloudinary(req.file.path);
-    if(result == null){
-      return res.send({status: false, message: "Profile pic not uploaded to cloudinary"});
+    const result = await uploadOnCloudinary(profilePic.path);
+    if (result == null) {
+      return res.send({
+        status: false,
+        message: "Not able to upload profile pic on server",
+      });
+    }
+    if (password.length < 6) {
+      return res.send({
+        status: false,
+        message: "Password should be at least 6 characters long",
+      });
     }
     const user = await User.create({
       username: username,
@@ -25,8 +38,9 @@ async function signUpUser(req, res) {
       followers: followers,
       following: following,
       profilePic: result.url,
+      bookmarks: [],
     });
-    res.status(201).send({
+    return res.status(201).send({
       status: true,
       user: user,
     });
@@ -57,6 +71,7 @@ async function loginUser(req, res) {
       email: user.email,
       followers: user.followers,
       following: user.following,
+      bookmarks: user.bookmarks,
     };
 
     var token = await generateJwtToken(
@@ -74,4 +89,21 @@ async function loginUser(req, res) {
   }
 }
 
-export { signUpUser, loginUser };
+async function getAllBlogsBySpecificUser(req, res) {
+  try {
+    const userId = req.params.id;
+    const objectId = new mongoose.Types.ObjectId(userId);
+    const blogs = await Blog.find({ createdBy: objectId }).populate("createdBy");
+    if (!blogs) {
+      return res.send({
+        status: false,
+        message: "No blogs found for this user",
+      });
+    }
+    return res.send({ status: true, blogs: blogs });
+  } catch (error) {
+    return res.send({ status: false, message: error });
+  }
+}
+
+export { signUpUser, loginUser, getAllBlogsBySpecificUser };

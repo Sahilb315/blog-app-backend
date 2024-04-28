@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      min: [6, "Password length must be at least 6 characters"],
     },
     followers: {
       type: [
@@ -27,8 +28,8 @@ const userSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
           required: true,
-        }
-      ]
+        },
+      ],
     },
     following: {
       type: [
@@ -36,9 +37,16 @@ const userSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
           required: true,
-        }
-      ]
+        },
+      ],
     },
+    bookmarks: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Blog",
+        default: [],
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -49,7 +57,7 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-userSchema.methods.comparePassword = async function (userPassword){
+userSchema.methods.comparePassword = async function (userPassword) {
   const isMatch = await bcrypt.compare(userPassword, this.password);
   return isMatch;
 };
