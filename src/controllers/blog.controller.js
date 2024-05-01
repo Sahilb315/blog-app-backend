@@ -1,13 +1,20 @@
 import { Blog } from "../models/blog.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { User } from "../models/user.model.js";
 
 async function getAllBlogs(req, res) {
   try {
-    const blogs = await Blog.find({}).populate("createdBy");
+    const blogs = await Blog.find({})
+      .populate("createdBy");
+      // .populate({ path: "bookmarksRef", options: { strictPopulate: false } });
+    for (const blog of blogs) {
+      await blog.createdBy.populate("bookmarks");
+    }
+    console.log(blogs);
+
     if (!blogs) {
       return res.send({ status: false, message: "Couldn't fetch blogs" });
     }
-    console.log(blogs);
 
     return res.send({ status: true, blogs: blogs });
   } catch (error) {
@@ -75,4 +82,25 @@ async function deleteBlogById(req, res) {
   }
 }
 
-export { getAllBlogs, getBlogById, addNewBlog, deleteBlogById };
+async function bookmarkBlog(req, res) {
+  try {
+    const { blogId, userId } = req.body;
+    const user = await User.findById(userId);
+    const isAlreadyBookmarked = user.bookmarks.includes(blogId);
+    if (isAlreadyBookmarked) {
+       await User.findByIdAndUpdate(userId, {
+        $pull: { bookmarks: blogId },
+      });
+    } else {
+      await User.findByIdAndUpdate(userId, {
+        $push: { bookmarks: blogId },
+      });
+    }
+    const updatedUser = await User.findById(userId).populate("bookmarks");
+    return res.send({ status: true, bookmarks: updatedUser.bookmarks });
+  } catch (error) {
+    return res.send({ status: false, message: error });
+  }
+}
+
+export { getAllBlogs, getBlogById, addNewBlog, deleteBlogById, bookmarkBlog };

@@ -3,7 +3,8 @@ import {
   getAllBlogs,
   addNewBlog,
   getBlogById,
-  deleteBlogById
+  deleteBlogById,
+  bookmarkBlog
 } from "../controllers/blog.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -16,7 +17,7 @@ blogRouter
 
 blogRouter
 .route("/:id")
-.delete(deleteBlogById)
+.patch(bookmarkBlog)
 .get(getBlogById);
 
 export { blogRouter };

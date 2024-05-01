@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
+//! author
 const userSchema = new mongoose.Schema(
   {
     profilePic: {
@@ -40,16 +41,24 @@ const userSchema = new mongoose.Schema(
         },
       ],
     },
-    bookmarks: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Blog",
+      bookmarks: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Blog",  
         default: [],
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+// userSchema.virtual('bookmarksRef', {
+//   ref: 'Blog',
+//   localField: 'bookmarks',
+//   foreignField: '_id',
+//   populate: { path: 'bookmarks', model: 'Blog' },
+// });
+
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();

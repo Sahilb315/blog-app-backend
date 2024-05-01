@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+//! blog
 const blogSchema = new mongoose.Schema(
   {
     createdBy: {

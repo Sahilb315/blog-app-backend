@@ -89,11 +89,29 @@ async function loginUser(req, res) {
   }
 }
 
+async function getUserModel(req, res){
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.send({
+        status: false,
+        message: "User does not exist",
+      });
+    }
+    return res.send({ status: true, user: user });
+  } catch (error) {
+    return res.send({ status: false, message: error });
+  }
+}
+
 async function getAllBlogsBySpecificUser(req, res) {
   try {
     const userId = req.params.id;
     const objectId = new mongoose.Types.ObjectId(userId);
-    const blogs = await Blog.find({ createdBy: objectId }).populate("createdBy");
+    const blogs = await Blog.find({ createdBy: objectId }).populate(
+      "createdBy"
+    );
     if (!blogs) {
       return res.send({
         status: false,
@@ -106,4 +124,33 @@ async function getAllBlogsBySpecificUser(req, res) {
   }
 }
 
-export { signUpUser, loginUser, getAllBlogsBySpecificUser };
+async function getAllBookmarkBlogs(req, res) {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId).populate("bookmarks");
+    for (const blog of user.bookmarks) {
+      await blog.populate("createdBy");
+    }
+    if (!user) {
+      return res.send({
+        status: false,
+        message: "No bookmarks found",
+      });
+    }
+
+    return res.send({ status: true, bookmarks: user.bookmarks });
+  } catch (error) {
+    return res.send({
+      status: false,
+      message: error,
+    });
+  }
+}
+
+export {
+  signUpUser,
+  loginUser,
+  getAllBlogsBySpecificUser,
+  getAllBookmarkBlogs,
+  getUserModel
+};
