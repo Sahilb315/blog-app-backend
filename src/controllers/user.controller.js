@@ -89,7 +89,7 @@ async function loginUser(req, res) {
   }
 }
 
-async function getUserModel(req, res){
+async function getUserModel(req, res) {
   try {
     const userId = req.params.id;
     const user = await User.findById(userId);
@@ -147,10 +147,51 @@ async function getAllBookmarkBlogs(req, res) {
   }
 }
 
+async function followUnfollowUser(req, res) {
+  try {
+    const { currentUserId, otherUserId } = req.body;
+    console.log(`Current user: ${currentUserId} Other user: ${otherUserId}`);
+    const currentUser = await User.findById(currentUserId);
+    const alreadyFollows = currentUser.following.includes(otherUserId);
+
+    /// Update the following & followers array of the current user & other user
+    if (alreadyFollows) { 
+      await User.findByIdAndUpdate(currentUserId, {
+        $pull: { following: otherUserId },
+      });
+
+      await User.findByIdAndUpdate(otherUserId, {
+        $pull: { followers: otherUserId },
+      });
+      return res.send({
+        status: true,
+        message: "User unfollowed",
+      });
+    } else {
+      await User.findByIdAndUpdate(currentUserId, {
+        $push: { following: otherUserId },
+      });
+      await User.findByIdAndUpdate(otherUserId, {
+        $push: { followers: otherUserId },
+      });
+      return res.send({
+        status: true,
+        message: "User followed",
+      });
+    }
+  } catch (error) {
+    return res.send({
+      status: false,
+      message: error.message,
+    });
+  }
+}
+
 export {
   signUpUser,
   loginUser,
   getAllBlogsBySpecificUser,
   getAllBookmarkBlogs,
-  getUserModel
+  getUserModel,
+  followUnfollowUser
 };
