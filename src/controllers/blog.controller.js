@@ -10,7 +10,6 @@ async function getAllBlogs(req, res) {
     for (const blog of blogs) {
       await blog.createdBy.populate("bookmarks");
     }
-    console.log(blogs);
 
     if (!blogs) {
       return res.send({ status: false, message: "Couldn't fetch blogs" });

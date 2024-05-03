@@ -155,7 +155,7 @@ async function followUnfollowUser(req, res) {
     const alreadyFollows = currentUser.following.includes(otherUserId);
 
     /// Update the following & followers array of the current user & other user
-    if (alreadyFollows) { 
+    if (alreadyFollows) {
       await User.findByIdAndUpdate(currentUserId, {
         $pull: { following: otherUserId },
       });
@@ -187,11 +187,43 @@ async function followUnfollowUser(req, res) {
   }
 }
 
+async function updateUserProfilePic(req, res) {
+  try {
+    const { userId } = req.body;
+    const profilePic = req.file;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.send({
+        status: false,
+        message: "Error while fetching user",
+      });
+    }
+    if (!profilePic) {
+      return res.send({ status: false, message: "Profile pic not found" });
+    }
+    const result = await uploadOnCloudinary(profilePic.path);
+    if (result == null) {
+      return res.send({
+        status: false,
+        message: "Not able to upload profile pic on server",
+      });
+    }
+    await User.findByIdAndUpdate(userId, { profilePic: result.url });
+    return res.send({
+      status: true,
+      url: result.url,
+    });
+  } catch (error) {
+    return res.send({ status: false, message: error });
+  }
+}
+
 export {
   signUpUser,
   loginUser,
   getAllBlogsBySpecificUser,
   getAllBookmarkBlogs,
   getUserModel,
-  followUnfollowUser
+  followUnfollowUser,
+  updateUserProfilePic,
 };

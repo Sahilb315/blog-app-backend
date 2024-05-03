@@ -6,6 +6,7 @@ import {
   getAllBookmarkBlogs,
   getUserModel,
   followUnfollowUser,
+  updateUserProfilePic,
 } from "../controllers/user.controller.js";
 import { bookmarkBlog } from "../controllers/blog.controller.js";
 
@@ -22,5 +23,10 @@ userRouter.get("/:id", getUserModel);
 userRouter.get("/bookmarks/:id", getAllBookmarkBlogs);
 userRouter.patch("/profile", bookmarkBlog);
 userRouter.patch("/follow", followUnfollowUser);
+userRouter.patch(
+  "/profilePic",
+  upload.single("profilePic"),
+  updateUserProfilePic
+);
 
 export { userRouter };

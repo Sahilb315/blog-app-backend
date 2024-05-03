@@ -18,6 +18,7 @@ blogRouter
 blogRouter
 .route("/:id")
 .patch(bookmarkBlog)
+.delete(deleteBlogById)
 .get(getBlogById);
 
 export { blogRouter };
